@@ -15,12 +15,12 @@ public protocol KeyboardObserverable {
     typealias KeyboardHeightChange = (visiableHeight: CGFloat, delta: CGFloat)
     
     /// A publisher that emits values when keyboard's frame changes.
-    var keyboardHeightChange: AnyPublisher<KeyboardHeightChange, Never> { get }
+    @MainActor var keyboardHeightChange: AnyPublisher<KeyboardHeightChange, Never> { get }
 }
 
 // MARK: - KeyboardObserver
 
-public class KeyboardObserver: KeyboardObserverable {
+@MainActor public class KeyboardObserver: KeyboardObserverable {
     /// Init a keyboard observer to observe the keyboard's visiable height on the given view.
     /// It will calculate the intersection height of the keyboard and the given view.
     /// - Parameter view: The given view
@@ -132,14 +132,14 @@ public struct KeyboardInfo {
 
 extension NotificationCenter.Publisher {
     /// Extract the user info of the keyboard
-    public func extract() -> AnyPublisher<KeyboardInfo, Never> {
+    @MainActor public func extract() -> AnyPublisher<KeyboardInfo, Never> {
         self.compactMap(extractKeyboardNotification(_:))
             .eraseToAnyPublisher()
     }
     
     /// Extract the user info of the keyboard using the given keypath
-    public func extract<T>(keyPath: KeyPath<KeyboardInfo, T>) -> AnyPublisher<T, Never> {
-        self.compactMap(extractKeyboardNotification(_:))
+    @MainActor public func extract<T>(keyPath: KeyPath<KeyboardInfo, T>) -> AnyPublisher<T, Never> {
+        self.extract()
             .map(keyPath)
             .eraseToAnyPublisher()
     }
@@ -147,7 +147,7 @@ extension NotificationCenter.Publisher {
 
 extension UIView {
     private struct Keys {
-        static var keyboardObserver = withUnsafePointer(to: "keyboardObserver") { $0 }
+        static let keyboardObserver = withUnsafePointer(to: "keyboardObserver") { $0 }
     }
     
     /// A custom UILayoutGuide that represents the keyboard's area.
@@ -171,7 +171,7 @@ extension UIView {
 
 // MARK: -
 
-private func extractKeyboardNotification(
+@MainActor private func extractKeyboardNotification(
     _ note: Notification
 ) -> KeyboardInfo? {
     guard let userInfo = note.userInfo else { return nil }
