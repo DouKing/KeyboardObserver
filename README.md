@@ -2,7 +2,9 @@
 
 Provides a reactive way to observe the changes of the keyboard's frame using Swift Combine.
 
-![demo](./Example/demo.mp4)
+<video width="375" height="667" controls>
+  <source src="/Example/demo.mp4" type="video/mp4">
+</video>
 
 ## Requirements
 
@@ -42,7 +44,7 @@ override func viewWillDisappear(_ animated: Bool) {
 
 ## Installation
 
-Add the below to your Package.swift file's dependencies:
+Add the below line to your Package.swift file as a dependency:
 
 ```swift
 .package(url: "https://github.com/DouKing/KeyboardObserver.git", branch: "main")
