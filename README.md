@@ -2,6 +2,8 @@
 
 Provides a reactive way to observe the changes of the keyboard's frame using Swift Combine.
 
+![demo](./Example/demo.mp4)
+
 ## Requirements
 
 - iOS 13.0+
@@ -22,6 +24,20 @@ view.keyboardObserver.keyboardHeightChange
     .sink { change in
         print(change)
     }
+```
+
+3. You can invalidate the observer at any time.
+
+```swift
+override func viewWillAppear(_ animated: Bool) {
+    super.viewWillAppear(animated)
+    view.keyboardObserver.validate()
+}
+
+override func viewWillDisappear(_ animated: Bool) {
+    super.viewWillDisappear(animated)
+    view.keyboardObserver.invalidate()
+}
 ```
 
 ## Installation
