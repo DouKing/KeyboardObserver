@@ -27,11 +27,30 @@ public class KeyboardObserver: KeyboardObserverable {
     public init(view: UIView) {
         self.view = view
         view.addGestureRecognizer(self.panGesture)
-        self.keyboardHeightConstraint = Self.installKeyboardGuide(self.keyboardAreaGuide, on: view)
+        self.keyboardHeightConstraint = Self.installKeyboardGuide(self.keyboardAreaLayoutGuide, on: view)
         
         self.cancellable = self.keyboardHeightChange.sink { [weak self] change in
-            self?.keyboardHeightConstraint.constant = change.visiableHeight
-            self?.view?.layoutIfNeeded()
+            guard let self else { return }
+            self.currentKeyboardHeightChange = change
+            guard self.isValid else { return }
+            self.keyboardHeightConstraint.constant = change.visiableHeight
+            self.view?.layoutIfNeeded()
+        }
+    }
+    
+    /// Invalidate the observer
+    public func invalidate() {
+        self.isValid = false
+    }
+    
+    /// Invalidate the observer. The observer is valid default.
+    public func validate() {
+        DispatchQueue.main.async {
+            if let height = self.currentKeyboardHeightChange?.visiableHeight {
+                self.keyboardHeightConstraint.constant = height
+                self.view?.layoutIfNeeded()
+            }
+            self.isValid = true
         }
     }
 
@@ -51,8 +70,10 @@ public class KeyboardObserver: KeyboardObserverable {
     
     private weak var view: UIView?
     private let keyboardHeightConstraint: NSLayoutConstraint
-    public let keyboardAreaGuide = UILayoutGuide()
-    fileprivate var cancellable: AnyCancellable?
+    public let keyboardAreaLayoutGuide = UILayoutGuide()
+    private var cancellable: AnyCancellable?
+    private var isValid = true
+    private var currentKeyboardHeightChange: KeyboardHeightChange?
     
     private let panGesture: KeyboardPanGestureRecognizer = {
         let pan = KeyboardPanGestureRecognizer()
@@ -112,13 +133,13 @@ public struct KeyboardInfo {
 extension NotificationCenter.Publisher {
     /// Extract the user info of the keyboard
     public func extract() -> AnyPublisher<KeyboardInfo, Never> {
-        self.compactMap(convertKeyboardNotification(_:))
+        self.compactMap(extractKeyboardNotification(_:))
             .eraseToAnyPublisher()
     }
     
     /// Extract the user info of the keyboard using the given keypath
     public func extract<T>(keyPath: KeyPath<KeyboardInfo, T>) -> AnyPublisher<T, Never> {
-        self.compactMap(convertKeyboardNotification(_:))
+        self.compactMap(extractKeyboardNotification(_:))
             .map(keyPath)
             .eraseToAnyPublisher()
     }
@@ -131,7 +152,7 @@ extension UIView {
     
     /// A custom UILayoutGuide that represents the keyboard's area.
     public var keyboardAreaLayoutGuide: UILayoutGuide {
-        return self.keyboardObserver.keyboardAreaGuide
+        return self.keyboardObserver.keyboardAreaLayoutGuide
     }
     
     /// A keyboard observer for observering the keyboard height on itself
@@ -150,7 +171,7 @@ extension UIView {
 
 // MARK: -
 
-private func convertKeyboardNotification(
+private func extractKeyboardNotification(
     _ note: Notification
 ) -> KeyboardInfo? {
     guard let userInfo = note.userInfo else { return nil }

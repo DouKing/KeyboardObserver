@@ -30,6 +30,16 @@ class ViewController: UIViewController {
         ])
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        view.keyboardObserver.validate()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        view.keyboardObserver.invalidate()
+    }
+    
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         chatBarView.resignFirstResponder()
     }

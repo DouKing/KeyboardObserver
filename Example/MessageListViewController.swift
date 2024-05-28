@@ -32,6 +32,16 @@ class MessageListViewController: UIViewController {
         setupKeyboardObserver()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        view.keyboardObserver.validate()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        view.keyboardObserver.invalidate()
+    }
+    
     private enum Section {
         case main
     }
@@ -115,6 +125,7 @@ extension MessageListViewController {
                 }
             }
             .store(in: &self.bag)
+        
         NotificationCenter.default
             .publisher(for: UIResponder.keyboardWillHideNotification)
             .sink { [weak self] note in
