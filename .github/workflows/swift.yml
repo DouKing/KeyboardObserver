@@ -20,12 +20,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - destination: "OS=17.0,name=iPhone 15 Pro"
-            name: "iOS 17.0"
+          - destination: "OS=17.4,name=iPhone SE"
+            name: "iOS 17.4"
             testPlan: "iOS"
             xcode: "Xcode_15.0.1"
             runsOn: macOS-14
     steps:
       - uses: actions/checkout@v4
       - name: ${{ matrix.name }}
-        run: set -o pipefail && env NSUnbufferedIO=YES xcodebuild -project "Example.xcodeproj" -scheme "Example" -destination "${{ matrix.destination }}" build -sdk iphonesimulator -configuration debug
+        run: set -o pipefail && env NSUnbufferedIO=YES xcodebuild -project "Example.xcodeproj" -scheme "Example" build -sdk iphonesimulator -configuration debug
