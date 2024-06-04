@@ -10,11 +10,22 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
-
-    runs-on: macos-latest
-
+  iOS:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.runsOn }}
+    env:
+      DEVELOPER_DIR: "/Applications/${{ matrix.xcode }}.app/Contents/Developer"
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - destination: "OS=17.0,name=iPhone 15 Pro"
+            name: "iOS 17.0"
+            testPlan: "iOS"
+            xcode: "Xcode_15.0.1"
+            runsOn: macOS-14
     steps:
-    - uses: actions/checkout@v4
-    - name: Build
-      run: swift build -v -Xswiftc "-sdk" -Xswiftc "`xcrun --sdk iphonesimulator --show-sdk-path`" -Xswiftc "-target" -Xswiftc "x86_64-apple-ios17.4-simulator"
+      - uses: actions/checkout@v4
+      - name: ${{ matrix.name }}
+        run: set -o pipefail && env NSUnbufferedIO=YES xcodebuild -project "Example.xcodeproj" -scheme "Example" -destination "${{ matrix.destination }}" build -sdk iphonesimulator -configuration debug
