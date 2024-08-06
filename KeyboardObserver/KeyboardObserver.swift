@@ -147,7 +147,7 @@ extension NotificationCenter.Publisher {
 
 extension UIView {
     private struct Keys {
-        static let keyboardObserver = withUnsafePointer(to: "keyboardObserver") { $0 }
+        @MainActor static let keyboardObserver = withUnsafePointer(to: "keyboardObserver") { $0 }
     }
     
     /// A custom UILayoutGuide that represents the keyboard's area.
